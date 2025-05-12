@@ -14,7 +14,7 @@ from main import mainframe
 #======================================================DONE========================================================
 
 #creating only one function to open multiple tabs and calling them
-def main():
+def run_login_window():
     win = Tk()
     app = signup(win)
     win.mainloop()
@@ -168,32 +168,53 @@ class loginbutton(Password):
                                  bg = "white", command=self.no)
             self.login.place(x=130, y= 40)
 
+
     def no(self):
-            if self.userentry.get() == "" or self.pasentry.get() == "":
-                messagebox.showerror("ERROR!","All fields should be filled.")
-                return
-            
-            try:
-                con = mysql.connector.connect(host="localhost", user="root", password="Faiza_065", database="hotel_management") #connectivity of data base
-                cur = con.cursor()
-                #check if user exists
+         if self.userentry.get() == "" or self.pasentry.get() == "":
+             messagebox.showerror("ERROR!", "All fields should be filled.")
+             return
 
-                query = "SELECT * FROM register WHERE email = %s AND password = %s"
-                params = (self.var_email.get(), self.var_pas.get())
-                
-                cur.execute(query, params)
-                row = cur.fetchone()
+         try:
+             con = mysql.connector.connect(
+                 host="localhost",
+                 user="root",
+                 password="Faiza_065",
+                 database="hotel_management",
+             )  # connectivity of data base
+             cur = con.cursor()
+             # check if user exists
 
-                if row == None:
-                    messagebox.showerror("ERROR", "Either email or password is incorrect.")
-                                
-                else:
-                    self.new_window = Toplevel(self.root)
-                    self.app = mainframe(self.new_window)
-                con.close()
+             query = "SELECT * FROM register WHERE email = %s AND password = %s"
+             params = (self.var_email.get(), self.var_pas.get())
 
-            except mysql.connector.Error as err:
-                messagebox.showerror("Database Error", f"Error: {err}")
+             cur.execute(query, params)
+             row = cur.fetchone()
+
+             if row == None:
+                 messagebox.showerror("ERROR", "Either email or password is incorrect.")
+
+             else:
+                 # Check for admin role
+                 email = self.var_email.get()
+                 query = "SELECT role FROM employee  WHERE email = %s"
+                 cur.execute(query, (email,))
+                 user_data = cur.fetchone()
+
+                 if user_data and user_data[0] == "admin":  
+                      self.root.destroy()
+                      import main 
+                      root = Tk()
+                      app = main.mainframe(root)  # Use main.mainframe
+                      root.mainloop()
+                 else:
+                     messagebox.showerror(
+                         "ERROR", "Access denied. Only administrators can log in."
+                     )
+
+             con.close()
+
+         except mysql.connector.Error as err:
+             messagebox.showerror("Database Error", f"Error: {err}")
 
 class forget(loginbutton):
     def __init__(self,root):
@@ -591,4 +612,4 @@ class done(hide):
         self.des()
 
 if __name__ == "__main__":
-    main()
+    run_login_window()

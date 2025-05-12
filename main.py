@@ -59,11 +59,7 @@ class page(window):
 
 
     def logout(self):
-        lout = messagebox.askyesno("Logout", "Do you want to logout?")
-        if lout>0:
-            self.root.destroy()
-        else:
-            return
+        self.root.destroy()
 
 class mainframe(page):
     def __init__(self, root):
